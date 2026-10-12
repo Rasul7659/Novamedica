@@ -10,8 +10,7 @@
   "scripts": {
     "start": "node server/index.js",
     "dev": "node --watch server/index.js",
-    "test": "node --test test/api.test.js",
-    "test:php": "node --test test/php.test.js"
+    "test": "node --test test/api.test.js"
   },
   "license": "UNLICENSED",
   "dependencies": {
