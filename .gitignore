@@ -1,7 +1,11 @@
 node_modules/
 data/
+novamedica-data/
 .tmp-data/
 .tmp-*
 .env
+config.php
+uploads/*
+!uploads/.htaccess
 .DS_Store
 *.log

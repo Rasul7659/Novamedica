@@ -1,0 +1,5 @@
+# Загруженные файлы только отдаются, исполняться не должны
+Options -Indexes -ExecCGI
+<FilesMatch "\.(php|phtml|phar|php[0-9])$">
+Require all denied
+</FilesMatch>
