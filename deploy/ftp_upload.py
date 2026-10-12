@@ -132,6 +132,7 @@ def main():
     ap.add_argument('--remote', help='папка на сервере, например /novamedica.ru/public_html (по умолчанию ищется автоматически)')
     ap.add_argument('--list', action='store_true', help='только показать структуру папок на сервере')
     ap.add_argument('--remove-ours', metavar='ПАПКА', help='удалить из этой папки файлы, загруженные этим скриптом по ошибке (только известные имена)')
+    ap.add_argument('--config', metavar='ФАЙЛ', help='загрузить этот локальный файл на сервер как config.php (после загрузки сайта)')
     ap.add_argument('--plain', action='store_true', help='сразу использовать обычный FTP')
     args = ap.parse_args()
     password = os.environ.get('FTP_PASSWORD') or getpass.getpass(f'Пароль FTP для {args.user} (ввод скрыт): ')
@@ -143,6 +144,18 @@ def main():
     ftp.cwd('/')
     if args.list:
         show_tree(ftp)
+        ftp.quit()
+        return
+    if args.config and args.remote:
+        # Только настройки: загружаем один файл и выходим
+        ensure_dir(ftp, args.remote)
+        with open(args.config, 'rb') as fh:
+            ftp.storbinary('STOR config.php', fh)
+        try:
+            ftp.sendcmd('SITE CHMOD 640 config.php')
+        except ftplib.all_errors:
+            pass
+        print('config.php загружен в', args.remote)
         ftp.quit()
         return
     remote = args.remote or find_site_dir(ftp)
