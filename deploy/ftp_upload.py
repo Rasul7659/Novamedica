@@ -17,7 +17,7 @@ SKIP_FILES = {'.env', '.DS_Store', 'Dockerfile', '.gitignore', 'router-dev.php',
 # Эти файлы пропускаются только в корне проекта (admin/js/app.js, например, нужен)
 SKIP_ROOT_FILES = {'app.js', 'package.json', 'package-lock.json', 'README.md', '.env.example'}
 # Что осталось на сервере от загрузки Node-версии
-LEGACY_FILES = ['app.js', 'package.json', 'package-lock.json', 'README.md', '.env.example', '.gitignore']
+LEGACY_FILES = ['app.js', 'package.json', 'package-lock.json', 'README.md', '.env.example', '.gitignore', 'index.htm']  # index.htm — заглушка хостинга
 LEGACY_DIRS = ['server']
 
 def connect(host, user, password, plain):
@@ -82,6 +82,24 @@ def show_tree(ftp, path='/', depth=0, max_depth=3):
         if is_dir and depth + 1 < max_depth and name not in ('uploads', 'node_modules'):
             show_tree(ftp, path.rstrip('/') + '/' + name, depth + 1, max_depth)
 
+OURS_FILES = ['.htaccess', 'index.php', 'config.example.php']
+OURS_DIRS = ['admin', 'php', 'public', 'uploads', 'server']
+
+def remove_ours(ftp, folder):
+    """Удаляет из папки только то, что создаёт этот скрипт. Остальное не трогает."""
+    print('Чистка ошибочной загрузки в', folder)
+    for f in OURS_FILES + LEGACY_FILES:
+        if f == 'index.htm':
+            continue
+        try:
+            ftp.cwd('/'); ftp.cwd(folder); ftp.delete(f); print('  ✕', f)
+        except ftplib.all_errors:
+            pass
+    for d in OURS_DIRS:
+        ftp.cwd('/'); ftp.cwd(folder)
+        rm_tree(ftp, d)
+        print('  ✕', d + '/') if d not in ftp.nlst() else None
+
 def rm_tree(ftp, name):
     try:
         ftp.cwd(name)
@@ -113,6 +131,7 @@ def main():
     ap.add_argument('--user', required=True)
     ap.add_argument('--remote', help='папка на сервере, например /novamedica.ru/public_html (по умолчанию ищется автоматически)')
     ap.add_argument('--list', action='store_true', help='только показать структуру папок на сервере')
+    ap.add_argument('--remove-ours', metavar='ПАПКА', help='удалить из этой папки файлы, загруженные этим скриптом по ошибке (только известные имена)')
     ap.add_argument('--plain', action='store_true', help='сразу использовать обычный FTP')
     args = ap.parse_args()
     password = os.environ.get('FTP_PASSWORD') or getpass.getpass(f'Пароль FTP для {args.user} (ввод скрыт): ')
@@ -148,6 +167,8 @@ def main():
             print('  ↑', os.path.join(rel, f) if rel != '.' else f)
     ftp.cwd(base)
     cleanup_legacy(ftp)
+    if args.remove_ours:
+        remove_ours(ftp, args.remove_ours)
     ftp.quit()
     print(f'Готово: загружено файлов — {sent}.')
 
