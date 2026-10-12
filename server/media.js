@@ -5,6 +5,10 @@ const path = require('path');
 const multer = require('multer');
 const { UPLOADS_DIR, uid } = require('./store');
 
+// sharp — нативный модуль; на некоторых хостингах он не собирается. Тогда сохраняем фото как есть.
+let sharp = null;
+try { sharp = require('sharp'); } catch { console.warn('[media] sharp недоступен: фото сохраняются без сжатия'); }
+
 const MAX_IMAGE = 10 * 1024 * 1024;
 const MAX_VIDEO = 30 * 1024 * 1024;
 
@@ -27,9 +31,8 @@ async function saveUpload(file) {
   if (!t) throw new Error('Этот тип файла не подходит. Загрузите фото JPG или PNG либо видео MP4');
   if (t.kind === 'image' && file.size > MAX_IMAGE) throw new Error('Фото больше 10 МБ. Уменьшите его и попробуйте ещё раз');
   let buf = file.buffer, ext = t.ext;
-  if (t.kind === 'image') {
+  if (t.kind === 'image' && sharp) {
     try {
-      const sharp = require('sharp');
       buf = await sharp(file.buffer).rotate().resize({ width: 2000, height: 2000, fit: 'inside', withoutEnlargement: true })
         .jpeg({ quality: 84, mozjpeg: true }).toBuffer(); // rotate() применяет ориентацию, метаданные (GPS) не копируются
       ext = 'jpg';
