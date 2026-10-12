@@ -8,7 +8,7 @@
 Если хостинг поддерживает FTPS (шифрование), скрипт использует его автоматически.
 Не загружаются: node_modules, data, .git, test, .env (зависимости ставятся на сервере).
 """
-import argparse, ftplib, os, ssl, sys
+import argparse, ftplib, getpass, os, ssl, sys
 
 SKIP_DIRS = {'node_modules', 'data', '.git', 'test', 'deploy', '.tmp-data'}
 SKIP_FILES = {'.env', '.DS_Store', 'Dockerfile'}
@@ -37,21 +37,42 @@ def ensure_dir(ftp, path):
             ftp.mkd(part)
             ftp.cwd(part)
 
+def find_site_dir(ftp):
+    """Ищет единственную папку вида <домен>/public_html в корне FTP."""
+    found = []
+    for name in ftp.nlst():
+        if name in ('.', '..'):
+            continue
+        try:
+            ftp.cwd('/' + name)
+            if 'public_html' in ftp.nlst():
+                found.append(f'/{name}/public_html')
+        except ftplib.all_errors:
+            pass
+    ftp.cwd('/')
+    if len(found) == 1:
+        return found[0]
+    print('Не удалось выбрать папку автоматически. Найдено:', found or 'ничего')
+    print('Запустите снова с параметром --remote /путь/к/сайту')
+    sys.exit(1)
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--host', required=True)
     ap.add_argument('--user', required=True)
-    ap.add_argument('--remote', required=True, help='папка на сервере, например /novamedica.ru/public_html')
+    ap.add_argument('--remote', help='папка на сервере, например /novamedica.ru/public_html (по умолчанию ищется автоматически)')
     ap.add_argument('--plain', action='store_true', help='сразу использовать обычный FTP')
     args = ap.parse_args()
-    password = os.environ.get('FTP_PASSWORD')
+    password = os.environ.get('FTP_PASSWORD') or getpass.getpass(f'Пароль FTP для {args.user} (ввод скрыт): ')
     if not password:
-        sys.exit('Задайте пароль: FTP_PASSWORD=... python3 deploy/ftp_upload.py ...')
+        sys.exit('Пароль не введён')
 
     root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
     ftp = connect(args.host, args.user, password, args.plain)
     ftp.cwd('/')
-    ensure_dir(ftp, args.remote)
+    remote = args.remote or find_site_dir(ftp)
+    print('Папка на сервере:', remote)
+    ensure_dir(ftp, remote)
     base = ftp.pwd()
     sent = 0
     for dirpath, dirs, files in os.walk(root):
