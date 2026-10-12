@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Novamedica — центр эстетической и превентивной медицины в Москве</title>
+<meta name="description" content="Novamedica — клиника эстетической и превентивной медицины в Москве. Дерматология и косметология: сначала диагностика, потом процедуры.">
+<meta name="theme-color" content="#FAF9F5">
+<link rel="icon" href="assets/logo.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header class="header">
+<div class="header__inner">
+<a href="#top" class="logo" aria-label="Novamedica — на главную"><img src="assets/logo.svg" alt=""><span>NOVAMEDICA</span></a>
+<nav class="nav" aria-label="Основная навигация">
+<a href="#services">Услуги и цены</a><a href="#about">Клиника</a><a href="#doctors">Врачи</a><a href="#contacts">Контакты</a>
+</nav>
+<a href="#contacts" class="btn btn--dark header__cta">Записаться на приём</a>
+<button type="button" class="burger" aria-label="Меню" aria-expanded="false" aria-controls="mobile-menu">
+<svg class="i-open" viewBox="0 0 24 24" fill="none" stroke="#FAF9F5" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M5 9h14M5 15h14"/></svg>
+<svg class="i-close" viewBox="0 0 24 24" fill="none" stroke="#FAF9F5" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+</button>
+</div>
+</header>
+
+<div class="mobile-menu" id="mobile-menu">
+<a href="#services">Услуги и цены</a><a href="#about">Клиника</a><a href="#doctors">Врачи</a><a href="#contacts">Контакты</a>
+<a href="#contacts" class="btn btn--dark">Записаться на приём</a>
+</div>
+
+<main>
+<!-- 1. Первый экран -->
+<section id="top" class="hero-wrap">
+<div class="hero">
+<img class="hero__img" src="assets/reception.jpg" alt="Ресепшен центра Novamedica" fetchpriority="high">
+<div class="hero__shade"></div>
+<div class="hero__body">
+<h1>Клиника эстетической и превентивной медицины в Москве</h1>
+<div class="license"><i></i>Лицензия № [номер] от [дата]</div>
+<a href="#about" class="btn btn--light">Узнать больше</a>
+</div>
+<div class="hero__bar">
+<span>Сначала диагностика, потом процедуры</span>
+<a href="#services" class="hero__link">Услуги и цены <span class="arrow-circle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span></a>
+</div>
+</div>
+</section>
+
+<section class="address-row" aria-label="Адрес и режим работы">
+<span>Москва, [улица, дом]</span><span>[Ежедневно, 10:00–20:00]</span><span>[+7 000 000-00-00]</span>
+</section>
+
+<!-- 2. О клинике -->
+<section id="about" class="about">
+<div class="about__text">
+<span class="eyebrow">О клинике</span>
+<h2 class="h2">Дерматология и косметология работают вместе</h2>
+<p class="about__lead">Врач оценивает состояние кожи, назначает диагностику и предлагает план на несколько месяцев. Этапы, сроки и стоимость вы знаете до начала лечения.</p>
+<a href="#visit" class="btn btn--dark">Как проходит приём</a>
+</div>
+<div class="about__photo"><img src="assets/reception.jpg" alt="Стойка ресепшена и вывеска" loading="lazy"></div>
+</section>
+
+<!-- 3. Услуги -->
+<section id="services" class="container services">
+<div class="section-head">
+<h2 class="h2">Услуги и цены</h2>
+<p>Цены ориентировочные. Полный прайс — в клинике и по запросу.</p>
+</div>
+<div class="services__grid">
+<a href="#contacts" class="service" data-topic="Консультация дерматолога">
+<div class="service__head"><h3>Консультация дерматолога</h3><p class="service__desc">Осмотр, диагноз, назначения</p></div>
+<span class="service__price">от [000] ₽</span><span class="arrow-circle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span></a>
+<a href="#contacts" class="service" data-topic="Консультация косметолога">
+<div class="service__head"><h3>Консультация косметолога</h3><p class="service__desc">Оценка кожи, подбор ухода</p></div>
+<span class="service__price">от [000] ₽</span><span class="arrow-circle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span></a>
+<a href="#contacts" class="service" data-topic="Лечение акне и постакне">
+<div class="service__head"><h3>Лечение акне и постакне</h3><p class="service__desc">Курс под наблюдением врача</p></div>
+<span class="service__price">от [000] ₽</span><span class="arrow-circle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span></a>
+<a href="#contacts" class="service" data-topic="Чистки лица">
+<div class="service__head"><h3>Чистки лица</h3><p class="service__desc">[Виды чисток]</p></div>
+<span class="service__price">от [000] ₽</span><span class="arrow-circle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span></a>
+<a href="#contacts" class="service" data-topic="Пилинги">
+<div class="service__head"><h3>Пилинги</h3><p class="service__desc">[Виды пилингов]</p></div>
+<span class="service__price">от [000] ₽</span><span class="arrow-circle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span></a>
+<a href="#contacts" class="service" data-topic="Инъекционная косметология">
+<div class="service__head"><h3>Инъекционная косметология</h3><p class="service__desc">[Биоревитализация, мезотерапия]</p></div>
+<span class="service__price">от [000] ₽</span><span class="arrow-circle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span></a>
+<a href="#contacts" class="service" data-topic="Аппаратная косметология">
+<div class="service__head"><h3>Аппаратная косметология</h3><p class="service__desc">[Аппараты клиники]</p></div>
+<span class="service__price">от [000] ₽</span><span class="arrow-circle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span></a>
+<a href="#contacts" class="service service--accent" data-topic="Нужна помощь с выбором">
+<div class="service__head"><h3>Программы ухода</h3><p class="service__desc">План на несколько месяцев с контрольными визитами</p></div>
+<span class="service__price"><span>Записаться</span></span><span class="arrow-circle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span></a>
+</div>
+<p class="services__note-mobile">Цены ориентировочные. Полный прайс — в клинике.</p>
+</section>
+
+<!-- 4. Врачи -->
+<section id="doctors" class="container doctors">
+<h2 class="h2">Врачи</h2>
+<div class="chips" role="group" aria-label="Фильтр по специальности">
+<button type="button" class="chip is-active" data-filter="all">Все</button>
+<button type="button" class="chip" data-filter="derm">Дерматолог</button>
+<button type="button" class="chip" data-filter="cosm">Косметолог</button>
+<button type="button" class="chip" data-filter="other">[Специальность]</button>
+</div>
+<div class="doctors__grid">
+<article class="doctor" data-role="derm"><div class="doctor__photo">[Фото врача]</div><div><div class="doctor__role">Дерматолог</div><h3>[ФИО врача]</h3></div></article>
+<article class="doctor" data-role="cosm"><div class="doctor__photo">[Фото врача]</div><div><div class="doctor__role">Косметолог</div><h3>[ФИО врача]</h3></div></article>
+<article class="doctor" data-role="other"><div class="doctor__photo">[Фото врача]</div><div><div class="doctor__role">[Специальность]</div><h3>[ФИО врача]</h3></div></article>
+<article class="doctor" data-role="other"><div class="doctor__photo">[Фото врача]</div><div><div class="doctor__role">[Специальность]</div><h3>[ФИО врача]</h3></div></article>
+</div>
+</section>
+
+<!-- 5. Как проходит первый визит -->
+<section id="visit" class="visit-wrap">
+<div class="visit">
+<h2 class="h2">Как проходит первый визит</h2>
+<ol class="steps">
+<li class="step"><span class="step__n">01</span><h3>Запись</h3><p>Выбираете время онлайн или пишете в мессенджер.</p></li>
+<li class="step"><span class="step__n">02</span><h3>Осмотр и диагностика</h3><p>Врач осматривает кожу и назначает необходимые исследования.</p></li>
+<li class="step"><span class="step__n">03</span><h3>План и стоимость</h3><p>Вы получаете план с этапами, сроками и ценой.</p></li>
+<li class="step"><span class="step__n">04</span><h3>Процедуры и контроль</h3><p>Проходите курс и приходите на контрольные визиты.</p></li>
+</ol>
+</div>
+</section>
+
+<!-- 6. Интерьер -->
+<section id="interior" class="container interior">
+<div class="section-head">
+<h2 class="h2">Интерьер</h2>
+<span class="interior__cap">1 — 3 · визуализация, заменить на фото клиники</span>
+</div>
+<div class="interior__grid">
+<div class="shot shot--main"><img src="assets/reception.jpg" alt="Ресепшен" loading="lazy"></div>
+<div class="interior__side">
+<div class="shot shot--sign"><img src="assets/reception.jpg" alt="Вывеска с логотипом" loading="lazy"></div>
+<div class="shot shot--wait"><img src="assets/reception.jpg" alt="Зона ожидания" loading="lazy"></div>
+</div>
+</div>
+<span class="interior__cap interior__cap--mobile">1 — 3 · визуализация, заменить на фото клиники</span>
+</section>
+
+<!-- 7. Запись -->
+<section id="contacts" class="contacts-wrap">
+<div class="contacts">
+<div class="contacts__info">
+<h2 class="h2">Записаться на приём</h2>
+<p class="contacts__lead">Оставьте телефон — администратор позвонит и подберёт время. Или напишите в мессенджер.</p>
+<div class="messengers">
+<a href="https://wa.me/" class="btn btn--dark" target="_blank" rel="noopener">WhatsApp</a>
+<a href="https://t.me/" class="btn btn--light" target="_blank" rel="noopener">Telegram</a>
+</div>
+<div class="info-list">
+<div><small>Адрес</small>Москва, [улица, дом, этаж]</div>
+<div><small>Режим работы</small>[Ежедневно, 10:00–20:00]</div>
+<div><small>Телефон</small>[+7 000 000-00-00]</div>
+</div>
+</div>
+<form class="form" id="lead-form" novalidate>
+<div class="field"><label for="f-name">Имя</label><input id="f-name" name="name" type="text" placeholder="Как к вам обращаться" autocomplete="name" required><span class="field__error">Укажите имя</span></div>
+<div class="field"><label for="f-phone">Телефон</label><input id="f-phone" name="phone" type="tel" placeholder="+7" autocomplete="tel" inputmode="tel" required><span class="field__error">Введите корректный номер телефона</span></div>
+<div class="field"><label for="f-topic">Направление</label>
+<select id="f-topic" name="topic"><option>Консультация дерматолога</option><option>Консультация косметолога</option><option>Нужна помощь с выбором</option></select></div>
+<input class="hp" type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true">
+<div class="consent"><input id="f-consent" name="consent" type="checkbox" required><label for="f-consent">Согласен на обработку персональных данных и с <a href="#policy">политикой конфиденциальности</a></label></div>
+<button type="submit" class="btn btn--dark">Записаться на приём</button>
+<p class="form__status" role="status" aria-live="polite"></p>
+</form>
+</div>
+</section>
+</main>
+
+<!-- 8. Подвал -->
+<footer id="policy" class="container footer">
+<div class="footer__top">
+<div class="logo"><img src="assets/logo.svg" alt=""><div><span>NOVAMEDICA</span><small>Центр эстетической и превентивной медицины</small></div></div>
+<div class="footer__col"><b>Навигация</b><a href="#services">Услуги и цены</a><a href="#about">Клиника</a><a href="#doctors">Врачи</a><a href="#contacts">Контакты</a></div>
+<div class="footer__col"><b>Документы</b><a href="#policy">Лицензия на медицинскую деятельность</a><a href="#policy">Политика конфиденциальности</a><a href="#policy">Согласие на обработку данных</a></div>
+<div class="footer__col"><b>Реквизиты</b><span>[Полное наименование юрлица]</span><span>ИНН [000000000000] · ОГРН [0000000000000]</span></div>
+</div>
+<div class="footer__bottom"><span>Имеются противопоказания. Необходима консультация специалиста.</span><span>© 2026 Novamedica</span></div>
+</footer>
+
+<script src="js/main.js"></script>
+</body>
+</html>
