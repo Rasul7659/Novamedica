@@ -24,7 +24,7 @@ def connect(host, user, password, plain):
         except Exception as e:
             print(f'FTPS не удался: {e}')
             if str(e).startswith('530'):
-                sys.exit('Сервер отклонил логин или пароль. Проверьте их в панели хостинга и запустите снова.')
+                print('Это не обязательно неверный пароль: сервер мог не принять защищённое соединение.')
             if input('Продолжить по обычному FTP, пароль пойдёт открытым текстом? [y/N] ').lower() != 'y':
                 sys.exit(1)
     ftp = ftplib.FTP(host, timeout=30)
