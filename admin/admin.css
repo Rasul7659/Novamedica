@@ -177,7 +177,7 @@ button{cursor:pointer}
 /* ---------- Специальности ---------- */
 .sp-row{display:flex;flex-wrap:wrap;align-items:center;gap:8px 10px;padding:12px 0;border-top:1px solid var(--line2)}
 .sp-row .inp{flex:1 1 180px;height:48px}
-.sp-row .cnt{font-size:13px;color:var(--muted);white-space:nowrap}
+.sp-row .cnt{font-size:13px;color:var(--muted)}
 .sp-row .btn[disabled]{opacity:.7}
 
 /* ---------- Тексты ---------- */
