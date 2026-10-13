@@ -46,7 +46,7 @@ export function mount(root, ctx) {
       const err = st.spErr[sp.id];
       const changed = val.trim() !== sp.name;
       return `<div class="sp-row"><input class="inp" data-sp="${esc(sp.id)}" maxlength="40" value="${esc(val)}" aria-label="Название специальности" ${err ? 'aria-invalid="true"' : ''}>
-<span class="cnt">врачей: ${used}</span>
+<span class="cnt">${used ? 'врачей: ' + used : 'нет врачей: на сайте не видна'}</span>
 <button type="button" class="btn btn--sm ${changed ? 'btn--olive' : 'btn--line'}" data-act="sp-save" data-id="${esc(sp.id)}" ${changed ? '' : 'disabled'}>Сохранить</button>
 <button type="button" class="btn btn--line btn--sm" data-act="sp-del" data-id="${esc(sp.id)}" ${used ? 'disabled title="Сначала переведите врачей на другую специальность"' : ''}>Удалить</button>
 ${err ? `<div class="hint" style="flex-basis:100%"><span class="err">${esc(err)}</span></div>` : ''}</div>`;
@@ -54,7 +54,7 @@ ${err ? `<div class="hint" style="flex-basis:100%"><span class="err">${esc(err)}
     const nerr = st.spErr.__new;
     return `<aside class="card side-card">
 <div class="panel-head"><h2>Специальности врачей</h2><button type="button" class="iconbtn" aria-label="Закрыть" data-act="specs-close">${ICON.close}</button></div>
-<p class="note" style="font-size:14px">Эти названия видят посетители сайта: ими подписаны карточки врачей и кнопки фильтра над ними. Удалить можно только специальность, у которой нет врачей.</p>
+<p class="note" style="font-size:14px">Эти названия видят посетители сайта: ими подписаны карточки врачей и кнопки фильтра над ними. Кнопка фильтра появляется, когда у специальности есть хотя бы один врач на сайте. Удалить можно только специальность, у которой нет врачей.</p>
 <div>${rows}</div>
 <div class="field"><label for="a3-newsp">Новая специальность</label>
 <div style="display:flex;gap:10px;flex-wrap:wrap"><input class="inp" id="a3-newsp" style="flex:1 1 200px" maxlength="40" placeholder="Например: Трихолог" value="${esc(st.newSpec)}" ${nerr ? 'aria-invalid="true"' : ''}>
@@ -171,7 +171,7 @@ ${e.spec ? `<span class="hint"><span class="err">${esc(e.spec)}</span></span>` :
     else if (act === 'specs') { st.mode = 'specs'; st.spErr = {}; render(); root.querySelector('#a3-newsp')?.focus(); }
     else if (act === 'specs-close') { st.mode = 'doctor'; render(); }
     else if (act === 'sp-add') {
-      specCall(() => api('POST', '/specialties', { name: st.newSpec }), 'Специальность добавлена. На сайте появится после публикации').then((out) => {
+      specCall(() => api('POST', '/specialties', { name: st.newSpec }), 'Специальность добавлена. Чтобы она появилась на сайте, выберите её у врача и опубликуйте').then((out) => {
         if (out) st.newSpec = ''; else st.spErr.__new = st.spErr.name || 'Проверьте название';
         render();
       });
