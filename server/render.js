@@ -1,6 +1,6 @@
 'use strict';
 // Серверная сборка страницы лендинга из содержимого (опубликованного или черновика для предпросмотра).
-const { SPECS, safeLink, telHref } = require('./schema');
+const { safeLink, telHref } = require('./schema');
 
 const e = (v) => String(v ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const price = (p) => (p ? 'от ' + String(p).replace(/\B(?=(\d{3})+(?!\d))/g, ' ') + ' ₽' : 'от [000] ₽');
@@ -23,7 +23,8 @@ function renderLanding(c, { preview = false } = {}) {
   const wa = safeLink(k.whatsapp), tg = safeLink(k.telegram);
   const services = c.services.filter((s) => s.visible);
   const doctors = c.doctors.filter((d) => d.visible);
-  const specsPresent = Object.keys(SPECS).filter((key) => doctors.some((d) => d.spec === key));
+  const specNames = Object.fromEntries(c.specialties.map((s) => [s.id, s.name]));
+  const specsPresent = c.specialties.map((s) => s.id).filter((key) => doctors.some((d) => d.spec === key));
   const showInteriorNote = [iMain, iSign, iWait].some((m) => m && m.placeholder);
   const topics = [...services.map((s) => s.title), 'Нужна помощь с выбором'];
 
@@ -39,13 +40,13 @@ function renderLanding(c, { preview = false } = {}) {
   const doctorCards = doctors.map((d) => {
     const m = c.media.find((x) => x.id === d.photoId);
     return `<article class="doctor" data-role="${e(d.spec)}"><div class="doctor__photo">${m ? `<img src="${e(m.url)}" alt="${e(m.alt || d.name)}" loading="lazy">` : ''}</div>
-<div><div class="doctor__role">${e(SPECS[d.spec] || '')}</div><h3>${e(d.name)}</h3>${d.exp ? `<div class="doctor__meta">Стаж ${e(d.exp)} лет</div>` : ''}${d.bio ? `<div class="doctor__meta">${e(d.bio)}</div>` : ''}</div></article>`;
+<div><div class="doctor__role">${e(specNames[d.spec] || '')}</div><h3>${e(d.name)}</h3>${d.exp ? `<div class="doctor__meta">Стаж ${e(d.exp)} лет</div>` : ''}${d.bio ? `<div class="doctor__meta">${e(d.bio)}</div>` : ''}</div></article>`;
   }).join('\n');
 
   const chips = specsPresent.length > 1
     ? `<div class="chips" role="group" aria-label="Фильтр по специальности">
 <button type="button" class="chip is-active" data-filter="all">Все</button>
-${specsPresent.map((key) => `<button type="button" class="chip" data-filter="${key}">${e(SPECS[key])}</button>`).join('\n')}
+${specsPresent.map((key) => `<button type="button" class="chip" data-filter="${key}">${e(specNames[key])}</button>`).join('\n')}
 </div>` : '';
 
   const steps = [c.visit.s1, c.visit.s2, c.visit.s3, c.visit.s4];

@@ -1,7 +1,7 @@
 'use strict';
 // Сравнение черновика с опубликованной версией: список изменений «для людей»
 // и применение исключений («Не публиковать»).
-const { SECTIONS, SPECS, SLOTS } = require('./schema');
+const { SECTIONS, SLOTS } = require('./schema');
 const { clone } = require('./store');
 
 const SECTION_KEYS = Object.keys(SECTIONS);
@@ -58,6 +58,18 @@ function diffContent(draft, published) {
     if (!drS.has(p.id)) out.push({ key: 'svc:' + p.id, where: 'Услуги', old: '', now: 'Убрана: ' + p.title, page: 'services' });
   }
 
+  // Специальности
+  const pubSp = byId(published.specialties);
+  const drSp = byId(draft.specialties);
+  for (const sp of draft.specialties) {
+    const p = pubSp.get(sp.id);
+    if (!p) out.push({ key: 'spec:' + sp.id, where: 'Специальности', old: '', now: 'Добавлена: ' + sp.name, page: 'doctors' });
+    else if (p.name !== sp.name) out.push({ key: 'spec:' + sp.id, where: 'Специальности', old: p.name, now: sp.name, page: 'doctors' });
+  }
+  for (const p of published.specialties) {
+    if (!drSp.has(p.id)) out.push({ key: 'spec:' + p.id, where: 'Специальности', old: '', now: 'Убрана: ' + p.name, page: 'doctors' });
+  }
+
   // Врачи
   const pubD = byId(published.doctors);
   const drD = byId(draft.doctors);
@@ -106,8 +118,8 @@ function applyExclusions(draft, published, excluded) {
     const [type, id] = [key.slice(0, key.indexOf(':')), key.slice(key.indexOf(':') + 1)];
     if (type === 'text' && SECTIONS[id]) {
       next[id] = clone(published[id]);
-    } else if (type === 'svc' || type === 'doc' || type === 'media') {
-      const field = { svc: 'services', doc: 'doctors', media: 'media' }[type];
+    } else if (type === 'svc' || type === 'doc' || type === 'media' || type === 'spec') {
+      const field = { svc: 'services', doc: 'doctors', media: 'media', spec: 'specialties' }[type];
       const pub = published[field].find((x) => x.id === id);
       const idx = next[field].findIndex((x) => x.id === id);
       if (pub && idx >= 0) next[field][idx] = clone(pub);
@@ -116,6 +128,13 @@ function applyExclusions(draft, published, excluded) {
     } else if (type === 'slot' && SLOTS[id]) {
       next.slots[id] = published.slots[id] || null;
     }
+  }
+  // У врача всегда должна быть существующая специальность: если её «не публикуют», подтягиваем её вместе с врачом
+  const specIds = new Set(next.specialties.map((s) => s.id));
+  for (const d of next.doctors) {
+    if (specIds.has(d.spec)) continue;
+    const sp = [...draft.specialties, ...published.specialties].find((s) => s.id === d.spec);
+    if (sp) { next.specialties.push(clone(sp)); specIds.add(sp.id); }
   }
   // Ссылки на удалённые файлы не должны «висеть»
   const mediaIds = new Set(next.media.map((m) => m.id));
@@ -129,4 +148,4 @@ function plural(n) {
   return a === 1 && b !== 11 ? 'изменение' : a >= 2 && a <= 4 && (b < 10 || b >= 20) ? 'изменения' : 'изменений';
 }
 
-module.exports = { diffContent, applyExclusions, plural, SPECS };
+module.exports = { diffContent, applyExclusions, plural };

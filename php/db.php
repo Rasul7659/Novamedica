@@ -5,10 +5,25 @@ declare(strict_types=1);
 const MAX_VERSIONS = 30;
 const ARCHIVE_DAYS = 90;
 
+// Данные, сохранённые до появления управляемых специальностей, дополняем списком по умолчанию
+// (в черновике, опубликованной версии и всех версиях истории). Возвращает true, если что-то изменено.
+function migrate_content(array &$d): bool
+{
+    $changed = false;
+    $add = function (&$c) use (&$changed) {
+        if (is_array($c) && !isset($c['specialties'])) { $c['specialties'] = DEFAULT_SPECIALTIES; $changed = true; }
+    };
+    $add($d['draft']);
+    $add($d['published']);
+    foreach ($d['versions'] as &$v) $add($v['content']);
+    return $changed;
+}
+
 function content_file(): JsonFile
 {
     static $f = null;
-    return $f ??= new JsonFile('content.json', function () {
+    if ($f !== null) return $f;
+    $f = new JsonFile('content.json', function () {
         $c = seed_content();
         $now = now_iso();
         return [
@@ -16,6 +31,9 @@ function content_file(): JsonFile
             'versions' => [['id' => 1, 'at' => $now, 'who' => 'Система', 'what' => 'Начальная версия сайта', 'content' => $c]],
         ];
     });
+    $probe = $f->data;
+    if (migrate_content($probe)) $f->mutate(function (array &$d) { migrate_content($d); });
+    return $f;
 }
 function requests_file(): JsonFile { static $f = null; return $f ??= new JsonFile('requests.json', fn() => ['items' => []]); }
 function admin_file(): JsonFile { static $f = null; return $f ??= new JsonFile('admin.json', fn() => []); }

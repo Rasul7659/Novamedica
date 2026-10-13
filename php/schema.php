@@ -3,7 +3,8 @@
 declare(strict_types=1);
 
 const LOCKED_NOTE = 'Имеются противопоказания. Необходима консультация специалиста.';
-const SPECS = ['derm' => 'Дерматолог', 'cosm' => 'Косметолог'];
+// Специальности по умолчанию; дальше ими управляет администратор (хранятся в содержимом сайта).
+const DEFAULT_SPECIALTIES = [['id' => 'derm', 'name' => 'Дерматолог'], ['id' => 'cosm', 'name' => 'Косметолог']];
 const SLOTS = [
     'hero' => 'Первый экран',
     'about' => 'О клинике',
@@ -11,7 +12,7 @@ const SLOTS = [
     'interiorSign' => 'Интерьер: малое фото 1',
     'interiorWait' => 'Интерьер: малое фото 2',
 ];
-const LIMITS = ['serviceTitle' => 50, 'serviceDesc' => 60, 'mediaName' => 80, 'mediaAlt' => 200, 'doctorName' => 100, 'doctorBio' => 500, 'note' => 500];
+const LIMITS = ['serviceTitle' => 50, 'serviceDesc' => 60, 'mediaName' => 80, 'mediaAlt' => 200, 'doctorName' => 100, 'doctorBio' => 500, 'note' => 500, 'specialty' => 40];
 
 function sections(): array
 {
@@ -128,14 +129,27 @@ function validate_service(array $d): array
     return $errs;
 }
 
-function validate_doctor(array $d): array
+function validate_doctor(array $d, array $specialties): array
 {
     $errs = [];
     $name = trim((string) ($d['name'] ?? ''));
     if ($name === '') $errs['name'] = 'Напишите ФИО — оно подписывает карточку';
     elseif (ulen($name) > LIMITS['doctorName']) $errs['name'] = 'Слишком длинно';
-    if (!isset(SPECS[$d['spec'] ?? ''])) $errs['spec'] = 'Выберите специальность';
+    if (!in_array($d['spec'] ?? '', array_column($specialties, 'id'), true)) $errs['spec'] = 'Выберите специальность';
     if (($d['exp'] ?? '') !== '' && !preg_match('/^\d{1,2}$/', (string) $d['exp'])) $errs['exp'] = 'Стаж — число лет, например: 8';
     if (ulen((string) ($d['bio'] ?? '')) > LIMITS['doctorBio']) $errs['bio'] = 'Слишком длинно: не больше ' . LIMITS['doctorBio'] . ' знаков';
     return $errs;
+}
+
+// Название специальности: от 2 до 40 знаков, без повторов (регистр не важен). $exceptId — сама редактируемая запись.
+function validate_specialty_name(string $name, array $specialties, ?string $exceptId = null): ?string
+{
+    $name = trim($name);
+    if ($name === '') return 'Напишите название специальности';
+    if (ulen($name) < 2) return 'Слишком коротко';
+    if (ulen($name) > LIMITS['specialty']) return 'Слишком длинно: не больше ' . LIMITS['specialty'] . ' знаков';
+    foreach ($specialties as $s) {
+        if ($s['id'] !== $exceptId && mb_strtolower($s['name'], 'UTF-8') === mb_strtolower($name, 'UTF-8')) return 'Такая специальность уже есть';
+    }
+    return null;
 }

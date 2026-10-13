@@ -2,7 +2,7 @@
 const { JsonFile, uid, clone } = require('./store');
 const { seedContent } = require('./seed');
 const { diffContent, applyExclusions, plural } = require('./diff');
-const { SLOTS, digits } = require('./schema');
+const { SLOTS, digits, DEFAULT_SPECIALTIES } = require('./schema');
 
 const MAX_VERSIONS = 30;
 const ARCHIVE_DAYS = 90;
@@ -19,6 +19,17 @@ const contentFile = new JsonFile('content.json', () => {
     versions: [{ id: 1, at: now, who: 'Система', what: 'Начальная версия сайта', content: clone(c) }]
   };
 });
+
+// Данные, сохранённые до появления управляемых специальностей, дополняем списком по умолчанию
+// (в черновике, опубликованной версии и всех версиях истории). Возвращает true, если что-то изменено.
+function migrateContent(d) {
+  let changed = false;
+  const add = (c) => { if (c && !c.specialties) { c.specialties = clone(DEFAULT_SPECIALTIES); changed = true; } };
+  add(d.draft); add(d.published);
+  (d.versions || []).forEach((v) => add(v.content));
+  return changed;
+}
+if (migrateContent(contentFile.data)) contentFile.save();
 
 const requestsFile = new JsonFile('requests.json', () => ({ items: [] }));
 const adminFile = new JsonFile('admin.json', () => ({}));

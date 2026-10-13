@@ -1,5 +1,5 @@
 'use strict';
-const { LOCKED_NOTE } = require('./schema');
+const { LOCKED_NOTE, DEFAULT_SPECIALTIES } = require('./schema');
 
 // Начальное содержимое сайта: повторяет макет лендинга. Всё, что клиника должна
 // заполнить сама, оставлено в квадратных скобках — как в макете.
@@ -39,6 +39,7 @@ function seedContent() {
       svc('s6', 'Инъекционная косметология', '[Биоревитализация, мезотерапия]'),
       svc('s7', 'Аппаратная косметология', '[Аппараты клиники]')
     ],
+    specialties: DEFAULT_SPECIALTIES.map((x) => ({ ...x })),
     doctors: [doc('d1', 'derm'), doc('d2', 'cosm'), doc('d3', 'derm'), doc('d4', 'cosm')],
     media: [
       media('m1', 'Ресепшен', 'Ресепшен центра Novamedica с логотипом на стене', null),
