@@ -4,7 +4,7 @@
   "private": true,
   "description": "Сайт клиники Novamedica и админка (/admin): PHP-версия",
   "scripts": {
-    "test": "node --test test/php.test.js"
+    "test": "node --test test/php.test.js test/php-migrate.test.js"
   },
   "license": "UNLICENSED",
   "devDependencies": {

@@ -43,7 +43,9 @@ function render_landing(array $c, bool $preview = false): string
     $tg = safe_link($k['telegram']);
     $services = array_values(array_filter($c['services'], fn($s) => $s['visible']));
     $doctors = array_values(array_filter($c['doctors'], fn($d) => $d['visible']));
-    $specsPresent = array_values(array_filter(array_keys(SPECS), function ($key) use ($doctors) {
+    $specNames = [];
+    foreach ($c['specialties'] as $sp) $specNames[$sp['id']] = $sp['name'];
+    $specsPresent = array_values(array_filter(array_keys($specNames), function ($key) use ($doctors) {
         foreach ($doctors as $d) if ($d['spec'] === $key) return true;
         return false;
     }));
@@ -151,12 +153,12 @@ function render_landing(array $c, bool $preview = false): string
 <h2 class="h2">Врачи</h2>
 <?php if (count($specsPresent) > 1): ?><div class="chips" role="group" aria-label="Фильтр по специальности">
 <button type="button" class="chip is-active" data-filter="all">Все</button>
-<?php foreach ($specsPresent as $key): ?><button type="button" class="chip" data-filter="<?= e($key) ?>"><?= e(SPECS[$key]) ?></button>
+<?php foreach ($specsPresent as $key): ?><button type="button" class="chip" data-filter="<?= e($key) ?>"><?= e($specNames[$key]) ?></button>
 <?php endforeach; ?></div>
 <?php endif; ?>
 <div class="doctors__grid">
 <?php foreach ($doctors as $d): $pm = $mediaById[$d['photoId'] ?? ''] ?? null; ?><article class="doctor" data-role="<?= e($d['spec']) ?>"><div class="doctor__photo"><?php if ($pm): ?><img src="<?= e($pm['url']) ?>" alt="<?= e($pm['alt'] ?: $d['name']) ?>" loading="lazy"><?php endif; ?></div>
-<div><div class="doctor__role"><?= e(SPECS[$d['spec']] ?? '') ?></div><h3><?= e($d['name']) ?></h3><?php if ($d['exp'] !== ''): ?><div class="doctor__meta">Стаж <?= e($d['exp']) ?> лет</div><?php endif; ?><?php if ($d['bio'] !== ''): ?><div class="doctor__meta"><?= e($d['bio']) ?></div><?php endif; ?></div></article>
+<div><div class="doctor__role"><?= e($specNames[$d['spec']] ?? '') ?></div><h3><?= e($d['name']) ?></h3><?php if ($d['exp'] !== ''): ?><div class="doctor__meta">Стаж <?= e($d['exp']) ?> лет</div><?php endif; ?><?php if ($d['bio'] !== ''): ?><div class="doctor__meta"><?= e($d['bio']) ?></div><?php endif; ?></div></article>
 <?php endforeach; ?>
 </div>
 </section>

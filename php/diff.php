@@ -60,6 +60,17 @@ function diff_content(array $draft, array $pub): array
         if (!isset($drS[$p['id']])) $out[] = ['key' => 'svc:' . $p['id'], 'where' => 'Услуги', 'old' => '', 'now' => 'Убрана: ' . $p['title'], 'page' => 'services'];
     }
 
+    $pubSp = by_id($pub['specialties']);
+    $drSp = by_id($draft['specialties']);
+    foreach ($draft['specialties'] as $sp) {
+        $p = $pubSp[$sp['id']] ?? null;
+        if (!$p) $out[] = ['key' => 'spec:' . $sp['id'], 'where' => 'Специальности', 'old' => '', 'now' => 'Добавлена: ' . $sp['name'], 'page' => 'doctors'];
+        elseif ($p['name'] !== $sp['name']) $out[] = ['key' => 'spec:' . $sp['id'], 'where' => 'Специальности', 'old' => $p['name'], 'now' => $sp['name'], 'page' => 'doctors'];
+    }
+    foreach ($pub['specialties'] as $p) {
+        if (!isset($drSp[$p['id']])) $out[] = ['key' => 'spec:' . $p['id'], 'where' => 'Специальности', 'old' => '', 'now' => 'Убрана: ' . $p['name'], 'page' => 'doctors'];
+    }
+
     $pubD = by_id($pub['doctors']);
     $drD = by_id($draft['doctors']);
     foreach ($draft['doctors'] as $d) {
@@ -110,8 +121,8 @@ function apply_exclusions(array $draft, array $pub, array $excluded): array
         $id = substr($key, $pos + 1);
         if ($type === 'text' && isset($secs[$id])) {
             $next[$id] = $pub[$id];
-        } elseif (in_array($type, ['svc', 'doc', 'media'], true)) {
-            $field = ['svc' => 'services', 'doc' => 'doctors', 'media' => 'media'][$type];
+        } elseif (in_array($type, ['svc', 'doc', 'media', 'spec'], true)) {
+            $field = ['svc' => 'services', 'doc' => 'doctors', 'media' => 'media', 'spec' => 'specialties'][$type];
             $pubItem = null;
             foreach ($pub[$field] as $x) if ($x['id'] === $id) $pubItem = $x;
             $idx = null;
@@ -121,6 +132,14 @@ function apply_exclusions(array $draft, array $pub, array $excluded): array
             elseif ($idx !== null) array_splice($next[$field], $idx, 1);
         } elseif ($type === 'slot' && isset(SLOTS[$id])) {
             $next['slots'][$id] = $pub['slots'][$id] ?? null;
+        }
+    }
+    // У врача всегда должна быть существующая специальность: если её «не публикуют», подтягиваем её вместе с врачом
+    $specIds = array_column($next['specialties'], 'id');
+    foreach ($next['doctors'] as $d) {
+        if (in_array($d['spec'], $specIds, true)) continue;
+        foreach (array_merge($draft['specialties'], $pub['specialties']) as $sp) {
+            if ($sp['id'] === $d['spec']) { $next['specialties'][] = $sp; $specIds[] = $sp['id']; break; }
         }
     }
     $ids = array_column($next['media'], 'id');

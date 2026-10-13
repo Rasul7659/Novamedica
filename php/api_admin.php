@@ -16,7 +16,7 @@ function admin_state(): array
     $new = array_values(array_filter($reqs, fn($r) => $r['status'] === 'new'));
     return [
         'me' => current_admin(),
-        'schema' => ['sections' => sections(), 'specs' => SPECS, 'slots' => SLOTS],
+        'schema' => ['sections' => sections(), 'slots' => SLOTS],
         'draft' => ['media' => media_view($c)] + $c,
         'changes' => changes(),
         'publishedAt' => content_file()->data['publishedAt'],
@@ -139,7 +139,7 @@ function handle_admin_api(string $method, string $path): void
     // Врачи
     $doctorFields = function (array $b): array {
         return [
-            'name' => trim(str($b['name'] ?? '', 200)), 'spec' => str($b['spec'] ?? '', 10),
+            'name' => trim(str($b['name'] ?? '', 200)), 'spec' => str($b['spec'] ?? '', 40),
             'exp' => substr(digits($b['exp'] ?? ''), 0, 2), 'bio' => trim(str($b['bio'] ?? '', 1000)),
             'photoId' => !empty($b['photoId']) ? str($b['photoId'], 40) : null, 'visible' => ($b['visible'] ?? true) !== false,
         ];
@@ -151,7 +151,7 @@ function handle_admin_api(string $method, string $path): void
     };
     if ($method === 'POST' && $path === '/doctors') {
         $d = $doctorFields(body_json());
-        $errors = validate_doctor($d);
+        $errors = validate_doctor($d, draft()['specialties']);
         if ($errors) fail_fields($errors);
         if (!$photoOk($d['photoId'])) fail_fields(['photo' => 'Фото не найдено. Загрузите его заново']);
         $item = ['id' => uid('d')] + $d;
@@ -160,7 +160,7 @@ function handle_admin_api(string $method, string $path): void
     }
     if ($method === 'PUT' && preg_match('#^/doctors/([\w-]+)$#', $path, $m)) {
         $d = $doctorFields(body_json());
-        $errors = validate_doctor($d);
+        $errors = validate_doctor($d, draft()['specialties']);
         if ($errors) fail_fields($errors);
         if (!$photoOk($d['photoId'])) fail_fields(['photo' => 'Фото не найдено. Загрузите его заново']);
         $found = edit_draft(function (array &$c) use ($m, $d) {
@@ -168,6 +168,34 @@ function handle_admin_api(string $method, string $path): void
             return false;
         });
         if (!$found) not_found('Врач не найден');
+        reply();
+    }
+
+    // Специальности врачей
+    if ($method === 'POST' && $path === '/specialties') {
+        $name = trim(str(body_json()['name'] ?? '', 200));
+        $err = validate_specialty_name($name, draft()['specialties']);
+        if ($err) fail_fields(['name' => $err]);
+        $item = ['id' => uid('sp'), 'name' => $name];
+        edit_draft(function (array &$c) use ($item) { $c['specialties'][] = $item; });
+        reply(['id' => $item['id']]);
+    }
+    if ($method === 'PUT' && preg_match('#^/specialties/([\w-]+)$#', $path, $m)) {
+        $name = trim(str(body_json()['name'] ?? '', 200));
+        $found = array_filter(draft()['specialties'], fn($s) => $s['id'] === $m[1]);
+        if (!$found) not_found('Специальность не найдена');
+        $err = validate_specialty_name($name, draft()['specialties'], $m[1]);
+        if ($err) fail_fields(['name' => $err]);
+        edit_draft(function (array &$c) use ($m, $name) { foreach ($c['specialties'] as &$s) if ($s['id'] === $m[1]) $s['name'] = $name; });
+        reply();
+    }
+    if ($method === 'DELETE' && preg_match('#^/specialties/([\w-]+)$#', $path, $m)) {
+        $c = draft();
+        if (!array_filter($c['specialties'], fn($s) => $s['id'] === $m[1])) not_found('Специальность не найдена');
+        $used = count(array_filter($c['doctors'], fn($d) => $d['spec'] === $m[1]));
+        if ($used) json_out(['error' => "Эта специальность указана у врачей: $used. Сначала переведите их на другую специальность."], 409);
+        if (count($c['specialties']) <= 1) json_out(['error' => 'Должна остаться хотя бы одна специальность.'], 409);
+        edit_draft(function (array &$d) use ($m) { $d['specialties'] = array_values(array_filter($d['specialties'], fn($s) => $s['id'] !== $m[1])); });
         reply();
     }
 

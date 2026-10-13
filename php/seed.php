@@ -29,6 +29,7 @@ function seed_content(): array
             $svc('s6', 'Инъекционная косметология', '[Биоревитализация, мезотерапия]'),
             $svc('s7', 'Аппаратная косметология', '[Аппараты клиники]'),
         ],
+        'specialties' => DEFAULT_SPECIALTIES,
         'doctors' => [$doc('d1', 'derm'), $doc('d2', 'cosm'), $doc('d3', 'derm'), $doc('d4', 'cosm')],
         'media' => [
             $media('m1', 'Ресепшен', 'Ресепшен центра Novamedica с логотипом на стене', null),
