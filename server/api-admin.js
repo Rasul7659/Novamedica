@@ -20,7 +20,7 @@ function state(req) {
   const reqs = db.activeRequests();
   return {
     me: auth.currentAdmin(req),
-    schema: { sections: S.SECTIONS, specs: S.SPECS, slots: S.SLOTS },
+    schema: { sections: S.SECTIONS, slots: S.SLOTS },
     draft: { ...c, media: mediaView(c) },
     changes: db.changes(),
     publishedAt: db.getPublishedAt(),
@@ -142,7 +142,7 @@ router.patch('/services/:id/visible', (req, res) => {
 
 // Врачи
 const doctorFields = (b) => ({
-  name: str(b.name, 200).trim(), spec: str(b.spec, 10), exp: S.digits(b.exp).slice(0, 2),
+  name: str(b.name, 200).trim(), spec: str(b.spec, 40), exp: S.digits(b.exp).slice(0, 2),
   bio: str(b.bio, 1000).trim(), photoId: b.photoId ? str(b.photoId, 40) : null, visible: b.visible !== false
 });
 function checkPhoto(c, photoId) {
@@ -150,7 +150,7 @@ function checkPhoto(c, photoId) {
 }
 router.post('/doctors', (req, res) => {
   const d = doctorFields(req.body);
-  const errors = S.validateDoctor(d);
+  const errors = S.validateDoctor(d, db.draft().specialties);
   if (Object.keys(errors).length) return fail(res, errors);
   if (!checkPhoto(db.draft(), d.photoId)) return fail(res, { photo: 'Фото не найдено. Загрузите его заново' });
   const item = { id: uid('d'), ...d };
@@ -159,7 +159,7 @@ router.post('/doctors', (req, res) => {
 });
 router.put('/doctors/:id', (req, res) => {
   const d = doctorFields(req.body);
-  const errors = S.validateDoctor(d);
+  const errors = S.validateDoctor(d, db.draft().specialties);
   if (Object.keys(errors).length) return fail(res, errors);
   if (!checkPhoto(db.draft(), d.photoId)) return fail(res, { photo: 'Фото не найдено. Загрузите его заново' });
   const found = db.editDraft((c) => {
@@ -169,6 +169,33 @@ router.put('/doctors/:id', (req, res) => {
     return true;
   });
   if (!found) return res.status(404).json({ error: 'Врач не найден' });
+  reply(req, res);
+});
+
+// Специальности врачей
+router.post('/specialties', (req, res) => {
+  const name = str(req.body.name, 200).trim();
+  const err = S.validateSpecialtyName(name, db.draft().specialties);
+  if (err) return fail(res, { name: err });
+  const item = { id: uid('sp'), name };
+  db.editDraft((c) => c.specialties.push(item));
+  reply(req, res, { id: item.id });
+});
+router.put('/specialties/:id', (req, res) => {
+  const name = str(req.body.name, 200).trim();
+  if (!db.draft().specialties.some((s) => s.id === req.params.id)) return res.status(404).json({ error: 'Специальность не найдена' });
+  const err = S.validateSpecialtyName(name, db.draft().specialties, req.params.id);
+  if (err) return fail(res, { name: err });
+  db.editDraft((c) => { c.specialties.find((s) => s.id === req.params.id).name = name; });
+  reply(req, res);
+});
+router.delete('/specialties/:id', (req, res) => {
+  const c = db.draft();
+  if (!c.specialties.some((s) => s.id === req.params.id)) return res.status(404).json({ error: 'Специальность не найдена' });
+  const used = c.doctors.filter((d) => d.spec === req.params.id).length;
+  if (used) return res.status(409).json({ error: `Эта специальность указана у врачей: ${used}. Сначала переведите их на другую специальность.` });
+  if (c.specialties.length <= 1) return res.status(409).json({ error: 'Должна остаться хотя бы одна специальность.' });
+  db.editDraft((d) => { d.specialties = d.specialties.filter((s) => s.id !== req.params.id); });
   reply(req, res);
 });
 

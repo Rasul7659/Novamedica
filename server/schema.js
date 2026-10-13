@@ -65,7 +65,8 @@ const SECTIONS = {
 
 const LOCKED_NOTE = 'Имеются противопоказания. Необходима консультация специалиста.';
 
-const SPECS = { derm: 'Дерматолог', cosm: 'Косметолог' };
+// Специальности по умолчанию; дальше ими управляет администратор (хранятся в содержимом сайта).
+const DEFAULT_SPECIALTIES = [{ id: 'derm', name: 'Дерматолог' }, { id: 'cosm', name: 'Косметолог' }];
 
 const SLOTS = {
   hero: 'Первый экран',
@@ -75,7 +76,7 @@ const SLOTS = {
   interiorWait: 'Интерьер: малое фото 2'
 };
 
-const LIMITS = { serviceTitle: 50, serviceDesc: 60, mediaName: 80, mediaAlt: 200, doctorName: 100, doctorBio: 500, note: 500 };
+const LIMITS = { serviceTitle: 50, serviceDesc: 60, mediaName: 80, mediaAlt: 200, doctorName: 100, doctorBio: 500, note: 500, specialty: 40 };
 
 // Значения для проверки полей. Возвращает { поле: сообщение } — пустой объект, если всё хорошо.
 function validateSection(key, values) {
@@ -138,12 +139,22 @@ function validateService(d) {
   return errs;
 }
 
-function validateDoctor(d) {
+// Название специальности: от 2 до 40 знаков, без повторов (регистр не важен). exceptId — сама редактируемая запись.
+function validateSpecialtyName(name, specialties, exceptId = null) {
+  const n = String(name || '').trim();
+  if (!n) return 'Напишите название специальности';
+  if ([...n].length < 2) return 'Слишком коротко';
+  if ([...n].length > LIMITS.specialty) return 'Слишком длинно: не больше ' + LIMITS.specialty + ' знаков';
+  if (specialties.some((s) => s.id !== exceptId && s.name.toLowerCase() === n.toLowerCase())) return 'Такая специальность уже есть';
+  return null;
+}
+
+function validateDoctor(d, specialties) {
   const errs = {};
   const name = String(d.name || '').trim();
   if (!name) errs.name = 'Напишите ФИО — оно подписывает карточку';
   else if (name.length > LIMITS.doctorName) errs.name = 'Слишком длинно';
-  if (!SPECS[d.spec]) errs.spec = 'Выберите специальность';
+  if (!specialties.some((s) => s.id === d.spec)) errs.spec = 'Выберите специальность';
   if (d.exp && (!/^\d{1,2}$/.test(String(d.exp)))) errs.exp = 'Стаж — число лет, например: 8';
   if (String(d.bio || '').length > LIMITS.doctorBio) errs.bio = 'Слишком длинно: не больше ' + LIMITS.doctorBio + ' знаков';
   return errs;
@@ -159,6 +170,6 @@ function telHref(v) {
 }
 
 module.exports = {
-  telHref, SECTIONS, SPECS, SLOTS, LIMITS, LOCKED_NOTE,
+  telHref, SECTIONS, DEFAULT_SPECIALTIES, validateSpecialtyName, SLOTS, LIMITS, LOCKED_NOTE,
   validateSection, validateService, validateDoctor, validPhone, safeLink, digits
 };

@@ -365,6 +365,54 @@ test('выход из админки', async () => {
   assert.match(out.headers.get('set-cookie'), /nm_admin=;/);
 });
 
+test('специальности: добавление, переименование, дубли, защита от удаления, публикация', async () => {
+  const st0 = (await admin('GET', '/bootstrap')).json;
+  assert.deepEqual(st0.draft.specialties.map((x) => x.name), ['Дерматолог', 'Косметолог']);
+
+  const add = await admin('POST', '/specialties', { name: '  Трихолог ' });
+  assert.equal(add.status, 200, JSON.stringify(add.json));
+  const id = add.json.id;
+  assert.equal(add.json.state.draft.specialties.at(-1).name, 'Трихолог');
+  assert.ok(add.json.state.changes.some((c) => c.key === 'spec:' + id && /Добавлена: Трихолог/.test(c.now)));
+
+  for (const bad of ['', ' ', 'Я', 'х'.repeat(41), 'трихолог', 'ДЕРМАТОЛОГ']) {
+    const r = await admin('POST', '/specialties', { name: bad });
+    assert.equal(r.status, 422, 'должно быть отклонено: «' + bad.slice(0, 10) + '»');
+    assert.ok(r.json.errors.name);
+  }
+  assert.equal((await admin('PUT', '/specialties/' + id, { name: 'Косметолог' })).status, 422, 'нельзя переименовать в существующее');
+  assert.equal((await admin('PUT', '/specialties/' + id, { name: 'Трихолог-эксперт' })).status, 200);
+  assert.equal((await admin('PUT', '/specialties/nope', { name: 'Любое' })).status, 404);
+
+  // врач с новой специальностью: до публикации на сайте нет ни его, ни фильтра
+  const doc = st0.draft.doctors[2];
+  const upd = await admin('PUT', '/doctors/' + doc.id, { name: 'Сидорова Мария', spec: id, exp: '5', bio: '', photoId: null, visible: true });
+  assert.equal(upd.status, 200, JSON.stringify(upd.json));
+  assert.equal((await admin('PUT', '/doctors/' + doc.id, { name: 'Сидорова Мария', spec: 'нет-такой', photoId: null })).status, 422, 'несуществующая специальность отклоняется');
+  assert.doesNotMatch((await call('GET', '/')).text, /Трихолог/);
+
+  // «Не публиковать» специальность: она подтягивается вместе с врачом, висячих ссылок не остаётся
+  const specKey = 'spec:' + id;
+  const pubEx = await admin('POST', '/publish', { exclude: [specKey] });
+  assert.equal(pubEx.status, 200);
+  assert.ok(pubEx.json.state.draft.specialties.some((x) => x.id === id));
+  const landing = (await call('GET', '/')).text;
+  assert.match(landing, /<div class="doctor__role">Трихолог-эксперт<\/div>/, 'у врача подписана специальность');
+  assert.match(landing, /data-filter="[^"]+">Трихолог-эксперт<\/button>/, 'в фильтре появилась кнопка');
+
+  // удаление: нельзя, пока есть врачи и пока она последняя
+  const del = await admin('DELETE', '/specialties/' + id);
+  assert.equal(del.status, 409);
+  assert.match(del.json.error, /указана у врачей: 1/);
+  await admin('PUT', '/doctors/' + doc.id, { name: 'Сидорова Мария', spec: 'derm', exp: '5', bio: '', photoId: null, visible: true });
+  assert.equal((await admin('DELETE', '/specialties/' + id)).status, 200);
+  assert.equal((await admin('DELETE', '/specialties/nope')).status, 404);
+  const pub = await admin('POST', '/publish', { exclude: [] });
+  assert.equal(pub.status, 200);
+  assert.doesNotMatch((await call('GET', '/')).text, /Трихолог/);
+  assert.match(pub.json.state.versions[0].what, /изменени/);
+});
+
 test('заголовки безопасности и закрытые пути', async () => {
   const r = await call('GET', '/');
   assert.equal(r.headers.get('x-content-type-options'), 'nosniff');
